@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium Trip Budget Dashboard</title>
+    <style>
+        :root {
+            --primary: #0f172a;
+            --primary-light: #1e293b;
+            --accent: #2563eb;
+            --accent-hover: #1d4ed8;
+            --bg-main: #f8fafc;
+            --bg-card: #ffffff;
+            --text-main: #334155;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --success-bg: #f0fdf4;
+            --success-text: #166534;
+            --info-bg: #eff6ff;
+            --info-text: #1e40af;
+            --danger: #ef4444;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            line-height: 1.5;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* --- LOGIN SCREEN STYLES --- */
+        .login-container {
+            width: 100%;
+            max-width: 400px;
+            padding: 20px;
+            display: block; /* Control via JS */
+        }
+
+        .login-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+            text-align: center;
+        }
+
+        .login-card h2 {
+            margin: 0 0 8px 0;
+            color: var(--primary);
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .login-card p {
+            color: var(--text-muted);
+            margin: 0 0 24px 0;
+            font-size: 0.9rem;
+        }
+
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            text-align: left;
+        }
+
+        .login-btn {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s ease;
+            margin-top: 8px;
+        }
+
+        .login-btn:hover {
+            background-color: var(--accent-hover);
+        }
+
+        .error-msg {
+            color: var(--danger);
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-top: -8px;
+            display: none;
+        }
+
+        /* --- DASHBOARD STYLES --- */
+        .dashboard {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            display: none; /* Hidden by default */
+            width: 100%;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        header h1 {
+            font-size: 2rem;
+            color: var(--primary);
+            margin: 0 0 8px 0;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+        }
+
+        header p {
+            color: var(--text-muted);
+            margin: 0;
+            font-size: 1rem;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 30px;
+        }
+
+        @media (max-width: 850px) {
+            .grid-container {
+                grid-template-columns: 1fr;
+            }
+            body {
+                align-items: flex-start;
+            }
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        .section-title {
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            font-weight: 700;
+            margin-top: 0;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group.full-width {
+            grid-column: span 2;
+        }
+
+        label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--primary-light);
+            margin-bottom: 6px;
+        }
+
+        input, select {
+            font-family: inherit;
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            color: var(--primary);
+            background-color: #fff;
+            transition: all 0.2s ease;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(37, 99, 219, 0.15);
+        }
+
+        .summary-list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 12px;
+            border-bottom: 1px dashed var(--border);
+            font-size: 0.95rem;
+        }
+
+        .summary-item:last-of-type {
+            border-bottom: none;
+        }
+
+        .summary-label {
+            color: var(--text-muted);
+        }
+
+        .summary-value {
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .total-box {
+            background-color: var(--success-bg);
+            border: 1px solid rgba(22, 101, 52, 0.1);
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .total-box .title {
+            font-weight: 600;
+            color: var(--success-text);
+        }
+
+        .total-box .amount {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--success-text);
+        }
+
+        .per-person-box {
+            background-color: var(--info-bg);
+            border: 1px solid rgba(30, 64, 175, 0.1);
+            border-radius: 12px;
+            padding: 18px;
+            margin-top: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .per-person-box .title {
+            font-weight: 700;
+            color: var(--info-text);
+            font-size: 1.05rem;
+        }
+
+        .per-person-box .amount {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--info-text);
+        }
+
+        .badge {
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            border-radius: 9999px;
+            background: #f1f5f9;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+
+<!-- --- 1. LOGIN INTERFACE LAYER --- -->
+<div class="login-container" id="loginScreen">
+    <div class="login-card">
+        <h2>Portal Login</h2>
+        <p>Enter credentials to access the budget planner</p>
+        <div class="login-form">
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" id="usernameInput" placeholder="e.g. rashid">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="passwordInput" placeholder="••••••••">
+            </div>
+            <div class="error-msg" id="loginError">Invalid username or password!</div>
+            <button class="login-btn" onclick="validateLogin()">Login to Dashboard</button>
+        </div>
+    </div>
+</div>
+
+<!-- --- 2. CORE DASHBOARD LAYER --- -->
+<div class="dashboard" id="dashboardScreen">
+    <header>
+        <h1>Group Trip Budget Planner</h1>
+        <p>Lahore sy nikalne wale haseen tours ka automatic total aur round-trip cost counter.</p>
+    </header>
+
+    <div class="grid-container">
+        <!-- Configuration Side -->
+        <div class="card">
+            <div class="section-title">Trip Parameters</div>
+            
+            <div class="form-grid">
+                <div class="form-group full-width">
+                    <label>Total Persons</label>
+                    <input type="number" id="totalPersons" value="4" min="1" oninput="calculateBudget()">
+                </div>
+            </div>
+
+            <div class="section-title">Route & Vehicle (From: Lahore)</div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Select Destination</label>
+                    <select id="destSelect" onchange="updateLocationAndCarDetails()">
+                        <option value="mushkpuri">Mushkpuri / Nathiagali (Low Cost North ~940 KM)</option>
+                        <option value="pirsohawa">Pir Sohawa / Margalla Hills (Lowest Cost ~760 KM)</option>
+                        <option value="malamjabba">Malam Jabba (Round Trip ~1150 KM)</option>
+                        <option value="swat">Swat / Mingora (Round Trip ~1000 KM)</option>
+                        <option value="kalam">Kalam Valley (Round Trip ~1350 KM)</option>
+                        <option value="murree">Murree Hills (Round Trip ~850 KM)</option>
+                        <option value="naran">Naran Valley (Round Trip ~1100 KM)</option>
+                        <option value="neelum">Neelum Valley (Round Trip ~1250 KM)</option>
+                        <option value="skardu">Skardu Adventure (Round Trip ~2100 KM)</option>
+                        <option value="custom">Custom Location</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Distance (KM Aana + Jaana Total)</label>
+                    <input type="number" id="distance" value="940" oninput="calculateBudget()">
+                </div>
+
+                <div class="form-group">
+                    <label>Select Vehicle</label>
+                    <select id="carSelect" onchange="updateLocationAndCarDetails()">
+                        <option value="alto">Suzuki Alto</option>
+                        <option value="city">Honda City Auto</option>
+                        <option value="grande">Toyota Grande</option>
+                        <option value="custom">Custom Entry</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Fuel Average (KM/L)</label>
+                    <input type="number" id="average" value="20" oninput="calculateBudget()">
+                </div>
+
+                <div class="form-group">
+                    <label>Petrol Price (Per Liter)</label>
+                    <input type="number" id="petrolPrice" value="300" oninput="calculateBudget()">
+                </div>
+                <div class="form-group">
+                    <label>Toll Taxes (PKR Aana + Jaana Auto)</label>
+                    <input type="number" id="tolls" value="1900" oninput="calculateBudget()">
+                </div>
+            </div>
+
+            <div class="section-title">Rentals & Logistical Costs</div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Car Rent (Per Day)</label>
+                    <input type="number" id="rentPerDay" value="4500" oninput="calculateBudget()">
+                </div>
+                <div class="form-group">
+                    <label>Total Trip Days</label>
+                    <input type="number" id="totalDays" value="3" oninput="calculateBudget()">
+                </div>
+                <div class="form-group">
+                    <label>Hotel Room (Per Night)</label>
+                    <input type="number" id="roomRate" value="3500" oninput="calculateBudget()">
+                </div>
+                <div class="form-group">
+                    <label>Total Nights Stay</label>
+                    <input type="number" id="totalNights" value="2" oninput="calculateBudget()">
+                </div>
+                <div class="form-group">
+                    <label>Food Cost (Per Person Total)</label>
+                    <input type="number" id="foodCostPerPerson" value="6000" oninput="calculateBudget()">
+                </div>
+                <div class="form-group">
+                    <label>Driver / Miscellaneous</label>
+                    <input type="number" id="extraCost" value="1500" oninput="calculateBudget()">
+                </div>
+            </div>
+        </div>
+
+        <!-- Live Statement Summary Side -->
+        <div class="card" style="align-self: start;">
+            <div class="section-title">Cost Breakdown <span class="badge" id="summaryDestBadge">Mushkpuri Top</span></div>
+            
+            <div class="summary-list">
+                <div class="summary-item">
+                    <span class="summary-label">Vehicle Rental (<span id="outDays">3</span> Days)</span>
+                    <span class="summary-value">Rs. <span id="outRent">0</span></span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Estimated Fuel (<span id="outLiters">0</span> Liters)</span>
+                    <span class="summary-value">Rs. <span id="outPetrol">0</span></span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Motorway Toll Expenses (Both Ways)</span>
+                    <span class="summary-value">Rs. <span id="outTolls">0</span></span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Accommodation Stay (<span id="outNights">2</span> Nights)</span>
+                    <span class="summary-value">Rs. <span id="outHotel">0</span></span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Food & Catering (<span id="outPersons">4</span> Persons)</span>
+                    <span class="summary-value">Rs. <span id="outFood">0</span></span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Driver / Extra Allowance</span>
+                    <span class="summary-value">Rs. <span id="outExtra">0</span></span>
+                </div>
+            </div>
+
+            <div class="total-box">
+                <span class="title">Total Budget</span>
+                <span class="amount">Rs. <span id="outGrandTotal">0</span></span>
+            </div>
+
+            <div class="per-person-box">
+                <span class="title">Per Person Split</span>
+                <span class="amount">Rs. <span id="outPerPerson">0</span></span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- 1. SECURITY MODULE LOGIC ---
+    function validateLogin() {
+        const uInput = document.getElementById('usernameInput').value.trim();
+        const pInput = document.getElementById('passwordInput').value.trim();
+        const errorDiv = document.getElementById('loginError');
+
+        // Target authentications requested
+        if (uInput === "rashid" && pInput === "khangee786") {
+            // Success handshake sequence
+            document.getElementById('loginScreen').style.display = 'none';
+            
+            // Reconfigure document alignment flow for dashboard layout mapping
+            document.body.style.display = 'block';
+            document.body.style.padding = '0';
+            
+            const dash = document.getElementById('dashboardScreen');
+            dash.style.display = 'block';
+            
+            // Trigger operational calculations setup
+            updateLocationAndCarDetails();
+        } else {
+            // Fail execution mapping
+            errorDiv.style.display = 'block';
+            document.getElementById('passwordInput').value = '';
+        }
+    }
+
+    // Allow pressing "Enter" key on password input field to log in directly
+    document.getElementById('passwordInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            validateLogin();
+        }
+    });
+
+    // --- 2. TRIP CORE CALCULATION LOGIC ---
+    function updateLocationAndCarDetails() {
+        const destType = document.getElementById('destSelect').value;
+        const carType = document.getElementById('carSelect').value;
+        
+        const distInput = document.getElementById('distance');
+        const tollInput = document.getElementById('tolls');
+        const avgInput = document.getElementById('average');
+        const rentInput = document.getElementById('rentPerDay');
+        const badge = document.getElementById('summaryDestBadge');
+        
+        // --- ROUTE SPECIFICATION (ROUND TRIP DISTANCES) ---
+        if (destType === 'mushkpuri') {
+            distInput.value = 940; 
+            badge.innerText = "Mushkpuri / Nathiagali";
+        } else if (destType === 'pirsohawa') {
+            distInput.value = 760; 
+            badge.innerText = "Pir Sohawa";
+        } else if (destType === 'murree') {
+            distInput.value = 850;
+            badge.innerText = "Murree";
+        } else if (destType === 'malamjabba') {
+            distInput.value = 1150;
+            badge.innerText = "Malam Jabba";
+        } else if (destType === 'swat') {
+            distInput.value = 1000;
+            badge.innerText = "Swat";
+        } else if (destType === 'kalam') {
+            distInput.value = 1350;
+            badge.innerText = "Kalam";
+        } else if (destType === 'naran') {
+            distInput.value = 1100;
+            badge.innerText = "Naran Valley";
+        } else if (destType === 'neelum') {
+            distInput.value = 1250;
+            badge.innerText = "Neelum Valley";
+        } else if (destType === 'skardu') {
+            distInput.value = 2100;
+            badge.innerText = "Skardu";
+        } else if (destType === 'custom') {
+            badge.innerText = "Custom Trip";
+        }
+
+        // --- VEHICLE SPECIFICATIONS ---
+        if (carType === 'alto') {
+            avgInput.value = 20;
+            rentInput.value = 4500;
+        } else if (carType === 'city') {
+            avgInput.value = 18;
+            rentInput.value = 5500;
+        } else if (carType === 'grande') {
+            avgInput.value = 15;
+            rentInput.value = 6500;
+        }
+
+        // --- TOLL CALCULATOR ENGINE (BOTH WAYS) ---
+        if (destType === 'pirsohawa') {
+            if (carType === 'alto') tollInput.value = 1300;
+            else if (carType === 'custom') {}
+            else tollInput.value = 1600;
+        }
+        else if (destType === 'murree' || destType === 'mushkpuri' || destType === 'neelum') {
+            if (carType === 'alto') tollInput.value = 1900;
+            else if (carType === 'custom') {} 
+            else tollInput.value = 2400;
+        } 
+        else if (destType === 'malamjabba' || destType === 'swat' || destType === 'kalam') {
+            if (carType === 'alto') tollInput.value = 3100;
+            else if (carType === 'custom') {}
+            else tollInput.value = 3800;
+        } 
+        else if (destType === 'naran' || destType === 'skardu') {
+            if (carType === 'alto') tollInput.value = 3300;
+            else if (carType === 'custom') {}
+            else tollInput.value = 4100;
+        }
+
+        calculateBudget();
+    }
+
+    function calculateBudget() {
+        let persons = parseInt(document.getElementById('totalPersons').value) || 1;
+        if(persons < 1) persons = 1;
+
+        const distance = parseFloat(document.getElementById('distance').value) || 0;
+        const average = parseFloat(document.getElementById('average').value) || 1;
+        const petrolPrice = parseFloat(document.getElementById('petrolPrice').value) || 0;
+        const tolls = parseFloat(document.getElementById('tolls').value) || 0;
+        
+        const rentPerDay = parseFloat(document.getElementById('rentPerDay').value) || 0;
+        const totalDays = parseFloat(document.getElementById('totalDays').value) || 0;
+        
+        const roomRate = parseFloat(document.getElementById('roomRate').value) || 0;
+        const totalNights = parseFloat(document.getElementById('totalNights').value) || 0;
+        
+        const foodCostPerPerson = parseFloat(document.getElementById('foodCostPerPerson').value) || 0;
+        const extraCost = parseFloat(document.getElementById('extraCost').value) || 0;
+
+        // Calculations processing logic
+        const litersRequired = Math.round((distance / average) * 10) / 10;
+        const totalPetrolCost = Math.round(litersRequired * petrolPrice);
+        const totalRent = rentPerDay * totalDays;
+        const totalHotel = roomRate * totalNights;
+        const totalFoodCost = foodCostPerPerson * persons;
+        
+        const grandTotal = totalRent + totalPetrolCost + tolls + totalHotel + totalFoodCost + extraCost;
+        const perPersonTotal = Math.round(grandTotal / persons);
+
+        // Rendering Updates to Web UI Layout Counters
+        document.getElementById('outDays').innerText = totalDays;
+        document.getElementById('outNights').innerText = totalNights;
+        document.getElementById('outPersons').innerText = persons;
+        document.getElementById('outLiters').innerText = litersRequired;
+
+        document.getElementById('outRent').innerText = totalRent.toLocaleString();
+        document.getElementById('outPetrol').innerText = totalPetrolCost.toLocaleString();
+        document.getElementById('outTolls').innerText = tolls.toLocaleString();
+        document.getElementById('outHotel').innerText = totalHotel.toLocaleString();
+        document.getElementById('outFood').innerText = totalFoodCost.toLocaleString();
+        document.getElementById('outExtra').innerText = extraCost.toLocaleString();
+        
+        document.getElementById('outGrandTotal').innerText = grandTotal.toLocaleString();
+        document.getElementById('outPerPerson').innerText = perPersonTotal.toLocaleString();
+    }
+</script>
+
+</body>
+</html>
